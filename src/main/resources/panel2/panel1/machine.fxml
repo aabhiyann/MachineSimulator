@@ -58,11 +58,11 @@
             <Font name="System Bold" size="13.0" />
          </font>
       </Label>
-      <TextField id="TF" fx:id="TFIXR2" layoutX="255.0" layoutY="182.0" prefHeight="25.0" prefWidth="145.0">
+      <TextField id="TF" fx:id="TFIXR3" layoutX="255.0" layoutY="182.0" prefHeight="25.0" prefWidth="145.0">
       </TextField>
-      <TextField id="TF" fx:id="TFIXR1" layoutX="255.0" layoutY="151.0" prefHeight="25.0" prefWidth="145.0">
+      <TextField id="TF" fx:id="TFIXR2" layoutX="255.0" layoutY="151.0" prefHeight="25.0" prefWidth="145.0">
       </TextField>
-      <TextField id="TF" fx:id="TFIXR0" layoutX="255.0" layoutY="117.0" prefHeight="25.0" prefWidth="145.0">
+      <TextField id="TF" fx:id="TFIXR1" layoutX="255.0" layoutY="117.0" prefHeight="25.0" prefWidth="145.0">
       </TextField>
       <Label layoutX="244.0" layoutY="121.0" text="1">
          <font>

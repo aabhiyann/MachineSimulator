@@ -42,11 +42,11 @@ public class MachineController extends Application {
     @FXML
     private TextField TFGPR3;
     @FXML
-    private TextField TFIXR0;
-    @FXML
     private TextField TFIXR1;
     @FXML
     private TextField TFIXR2;
+    @FXML
+    private TextField TFIXR3;
     @FXML
     private TextField TFBINARY;
     @FXML
@@ -121,9 +121,9 @@ public class MachineController extends Application {
         regMap.put("10", TFGPR2);
         regMap.put("11", TFGPR3);
         ixrMap = new HashMap<>();
-        ixrMap.put("00", TFIXR0);
         ixrMap.put("01", TFIXR1);
         ixrMap.put("10", TFIXR2);
+        ixrMap.put("11", TFIXR3);
     }
 
     @FXML
@@ -160,7 +160,7 @@ public class MachineController extends Application {
             updateFromUI2CPU();
         });
         IXR0.setOnAction(event -> {
-            TFIXR0.setText(TFBINARY.getText());
+            TFIXR3.setText(TFBINARY.getText());
             updateFromUI2CPU();
         });
         IXR1.setOnAction(event -> {
@@ -236,9 +236,9 @@ public class MachineController extends Application {
         cpu.setGPR(1,TFGPR1.getText());
         cpu.setGPR(2,TFGPR2.getText());
         cpu.setGPR(3,TFGPR3.getText());
-        cpu.setIXR(0,TFIXR0.getText());
         cpu.setIXR(1,TFIXR1.getText());
         cpu.setIXR(2,TFIXR2.getText());
+        cpu.setIXR(3,TFIXR3.getText());
         cpu.setPC(TFPC.getText());
         cpu.setMAR(TFMAR.getText());
         cpu.setMBR(TFMBR.getText());
@@ -255,9 +255,9 @@ public class MachineController extends Application {
         TFGPR1.setText(cpu.getGPR(1));
         TFGPR2.setText(cpu.getGPR(2));
         TFGPR3.setText(cpu.getGPR(3));
-        TFIXR0.setText(cpu.getIXR(0));
         TFIXR1.setText(cpu.getIXR(1));
         TFIXR2.setText(cpu.getIXR(2));
+        TFIXR3.setText(cpu.getIXR(3));
         TFPC.setText(cpu.getPC());
         TFMAR.setText(cpu.getMAR());
         TFMBR.setText(cpu.getMBR());

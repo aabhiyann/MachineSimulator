@@ -5,6 +5,9 @@ import javafx.concurrent.Task;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class CPU {
     private IOCallback ioCallback;
@@ -15,7 +18,7 @@ public class CPU {
     private String keyboardInput;
     private final Object lock = new Object();
     public String[] GPR = new String[4];
-    public String[] IXR = new String[3];
+    public String[] IXR = new String[4];
     public String PC = "000000000000";
     public String MAR = "000000000000";
     public String MBR = "0000000000000000";
@@ -33,10 +36,26 @@ public class CPU {
     private HashSet<String> ShiftRotate;
     private HashSet<String> IO;
     public CPU() {
-
+        processIOTasks();
     }
     private StateUpdateCallback stateUpdateCallback;
+    private final ConcurrentLinkedQueue<Runnable> ioTasks = new ConcurrentLinkedQueue<>();
+    private final ExecutorService ioExecutor = Executors.newSingleThreadExecutor(); // 用单线程执行器确保顺序执行
 
+    public void addIOTask(Runnable task) {
+        ioTasks.offer(task);
+    }
+
+    private void processIOTasks() {
+        ioExecutor.submit(() -> {
+            while (!Thread.currentThread().isInterrupted()) {
+                Runnable task = ioTasks.poll();
+                if (task != null) {
+                    task.run();
+                }
+            }
+        });
+    }
     public void setStateUpdateCallback(StateUpdateCallback callback) {
         this.stateUpdateCallback = callback;
     }
@@ -149,15 +168,25 @@ public class CPU {
         String instructionBin = memory.getMemoryContent(addressDec);
         if(instructionBin.substring(0,6).equals("000000")){
             memory.setMemoryContent(addressDec, String.format("%16s", instructionBin.substring(6)).replace(' ', '0'));
+        }else {
+            int res = parse(instructionBin, memory);
+            if(res==5){
+                if (stateUpdateCallback != null) {
+                    stateUpdateCallback.onStateUpdated();
+                }
+                return 0;
+            }
         }
-        int res = parse(instructionBin, memory);
         addressDec++;
         String incrementAdd = String.format("%12s",Integer.toBinaryString(addressDec)).replace(' ','0');
         PC=incrementAdd;
         MBR=memory.getMemoryContent(addressDec);
         MAR=incrementAdd;
+        if (stateUpdateCallback != null) {
+            stateUpdateCallback.onStateUpdated();
+        }
         if(addressDec==memory.getEndAddress()){
-            PC=(String.format("%16s", Integer.toBinaryString(memory.getFirstAddress())).replace(' ', '0'));
+            PC=(String.format("%12s", Integer.toBinaryString(memory.getFirstAddress())).replace(' ', '0'));
         }
         return 0;
     }
@@ -302,12 +331,7 @@ public class CPU {
         String addressingMode = instruction.substring(10, 11);
         String address = instruction.substring(11);
 
-        int EA = calculateEA(indexRegisters, addressingMode, address, memory);
-        if (EA < 0) {
-            // Handle unreachable effective address
-            System.out.println("Unreachable effective address detected.");
-            return -1;
-        }
+        int EA = 0;
 
         int registerIndex = Integer.parseInt(generalRegisters, 2);
 
@@ -325,6 +349,12 @@ public class CPU {
                 }
                 break;
             case "000110": // JZ x, address[,I]
+                EA=calculateEA(indexRegisters, addressingMode, address, memory);
+                if (EA < 0) {
+                    // Handle unreachable effective address
+                    System.out.println("Unreachable effective address detected.");
+                    return -1;
+                }
                 if (CC.charAt(3) == '1') { // E bit of Condition Code is 1
                     PC = String.format("%12s", Integer.toBinaryString(EA)).replace(' ', '0');
                 } else {
@@ -334,8 +364,14 @@ public class CPU {
                 if (stateUpdateCallback != null) {
                     stateUpdateCallback.onStateUpdated();
                 }
-                break;
+                return 5;
             case "000111": // JNE x, address[,I]
+                EA=calculateEA(indexRegisters, addressingMode, address, memory);
+                if (EA < 0) {
+                    // Handle unreachable effective address
+                    System.out.println("Unreachable effective address detected.");
+                    return -1;
+                }
                 if (CC.charAt(3) == '0') { // E bit of Condition Code is 0
                     PC = String.format("%12s", Integer.toBinaryString(EA)).replace(' ', '0');
                 } else {
@@ -345,8 +381,14 @@ public class CPU {
                 if (stateUpdateCallback != null) {
                     stateUpdateCallback.onStateUpdated();
                 }
-                break;
+                return 5;
             case "001000": // JCC cc, x, address[,I]
+                EA=calculateEA(indexRegisters, addressingMode, address, memory);
+                if (EA < 0) {
+                    // Handle unreachable effective address
+                    System.out.println("Unreachable effective address detected.");
+                    return -1;
+                }
                 int ccIndex = Integer.parseInt(generalRegisters, 2);
                 if (CC.charAt(ccIndex) == '1') {
                     PC = String.format("%12s", Integer.toBinaryString(EA)).replace(' ', '0');
@@ -357,21 +399,33 @@ public class CPU {
                 if (stateUpdateCallback != null) {
                     stateUpdateCallback.onStateUpdated();
                 }
-                break;
+                return 5;
             case "001001": // JMA x, address[,I]
+                EA=calculateEA(indexRegisters, addressingMode, address, memory);
+                if (EA < 0) {
+                    // Handle unreachable effective address
+                    System.out.println("Unreachable effective address detected.");
+                    return -1;
+                }
                 PC = String.format("%12s", Integer.toBinaryString(EA)).replace(' ', '0');
                 if (stateUpdateCallback != null) {
                     stateUpdateCallback.onStateUpdated();
                 }
-                break;
+                return 5;
             case "001010": // JSR x, address[,I]
+                EA=calculateEA(indexRegisters, addressingMode, address, memory);
+                if (EA < 0) {
+                    // Handle unreachable effective address
+                    System.out.println("Unreachable effective address detected.");
+                    return -1;
+                }
                 int currPCValue = Integer.parseInt(PC, 2);
                 GPR[3] = String.format("%16s", Integer.toBinaryString(currPCValue + 1)).replace(' ', '0');
                 PC = String.format("%12s", Integer.toBinaryString(EA)).replace(' ', '0');
                 if (stateUpdateCallback != null) {
                     stateUpdateCallback.onStateUpdated();
                 }
-                break;
+                return 5;
             case "001011": // RFS Immed
                 int immed = Integer.parseInt(address, 2);
                 GPR[0] = String.format("%16s", Integer.toBinaryString(immed)).replace(' ', '0');
@@ -380,12 +434,18 @@ public class CPU {
                 if (stateUpdateCallback != null) {
                     stateUpdateCallback.onStateUpdated();
                 }
-                break;
+                return 5;
             case "001100": // SOB r, x, address[,I]
+                EA=calculateEA(indexRegisters, addressingMode, address, memory);
+                if (EA < 0) {
+                    // Handle unreachable effective address
+                    System.out.println("Unreachable effective address detected.");
+                    return -1;
+                }
                 int regValSOB = Integer.parseInt(GPR[registerIndex], 2);
                 int regValSOB1 = regValSOB - 1;
                 GPR[registerIndex] = String.format("%16s", Integer.toBinaryString(regValSOB1)).replace(' ', '0');
-                if (regValSOB > 0) {
+                if (regValSOB1 > 0) {
                     PC = String.format("%12s", Integer.toBinaryString(EA)).replace(' ', '0');
                 } else {
                     int currPCValueSOB = Integer.parseInt(PC, 2);
@@ -394,8 +454,14 @@ public class CPU {
                 if (stateUpdateCallback != null) {
                     stateUpdateCallback.onStateUpdated();
                 }
-                break;
+                return 5;
             case "001101": // JGE r, x, address[,I]
+                EA=calculateEA(indexRegisters, addressingMode, address, memory);
+                if (EA < 0) {
+                    // Handle unreachable effective address
+                    System.out.println("Unreachable effective address detected.");
+                    return -1;
+                }
                 int regValJGE = Integer.parseInt(GPR[registerIndex], 2);
                 if (regValJGE >= 0) {
                     PC = String.format("%12s", Integer.toBinaryString(EA)).replace(' ', '0');
@@ -406,7 +472,7 @@ public class CPU {
                 if (stateUpdateCallback != null) {
                     stateUpdateCallback.onStateUpdated();
                 }
-                break;
+                return 5;
             default:
                 return 1; // error
         }
@@ -428,16 +494,17 @@ public class CPU {
 
         // Extracting address
         String address = instruction.substring(11);
-        int EA = calculateEA(indexRegisters, addressingMode, address, memory);
-        if(EA<0){
-            return -1; // unreachable EA
-        }
+        int EA = 0;
         int index=0;
         String fromMem="0";
         int cr=0,cea=0,immed=0;
         switch (opcode){
             case "001110":
                 //AMR r,x,address,[i]
+                EA=calculateEA(indexRegisters, addressingMode, address, memory);
+                if(EA<0){
+                    return -1; // unreachable EA
+                }
                 fromMem=memory.getMemoryContent(EA);
                 index=Integer.parseInt(generalRegisters,2);
                 cr=Integer.parseInt(GPR[index],2);
@@ -449,6 +516,10 @@ public class CPU {
                 return 0;
             case "001111":
                 //SMR r,x,address,[i]
+                EA=calculateEA(indexRegisters, addressingMode, address, memory);
+                if(EA<0){
+                    return -1; // unreachable EA
+                }
                 fromMem=memory.getMemoryContent(EA);
                 index=Integer.parseInt(generalRegisters,2);
                 cr=Integer.parseInt(GPR[index],2);
@@ -462,9 +533,12 @@ public class CPU {
                 //AIR r,immed
                 index=Integer.parseInt(generalRegisters,2);
                 cr=Integer.parseInt(GPR[index],2);
-                immed=Integer.parseInt(address.substring(1),2);
-                if(address.charAt(0)=='1'){
-                    immed=-immed;
+                immed=Integer.parseInt(address);
+                if(immed>15){
+                    String biImmed = Integer.toBinaryString(immed);
+                    if(biImmed.charAt(0)=='1'){
+                        immed=-Integer.parseInt(biImmed.substring(1),2);
+                    }
                 }
                 GPR[index]=String.format("%16s",Integer.toBinaryString(cr+immed)).replace(' ','0');
                 if (stateUpdateCallback != null) {
@@ -475,9 +549,12 @@ public class CPU {
                 //SIR r,immed
                 index=Integer.parseInt(generalRegisters,2);
                 cr=Integer.parseInt(GPR[index],2);
-                immed=Integer.parseInt(address.substring(1),2);
-                if(address.charAt(0)=='1'){
-                    immed=-immed;
+                immed=Integer.parseInt(address);
+                if(immed>15){
+                    String biImmed = Integer.toBinaryString(immed);
+                    if(biImmed.charAt(0)=='1'){
+                        immed=-Integer.parseInt(biImmed.substring(1),2);
+                    }
                 }
                 GPR[index]=String.format("%16s",Integer.toBinaryString(cr-immed)).replace(' ','0');
                 if (stateUpdateCallback != null) {
@@ -697,14 +774,15 @@ public class CPU {
                                     try {
                                         lock.wait();
                                         System.out.println("unlocked");
+                                        GPR[index] = String.format("%16s", Integer.toBinaryString(Integer.parseInt(keyboardInput))).replace(' ', '0');
+                                        if (stateUpdateCallback != null) {
+                                            stateUpdateCallback.onStateUpdated();
+                                        }
+                                        return 0;
                                     } catch (InterruptedException e) {
                                         Thread.currentThread().interrupt();
                                         return 1;
                                     }
-                                }
-                                GPR[index] = String.format("%16s", Integer.toBinaryString(Integer.parseInt(keyboardInput))).replace(' ', '0');
-                                if (stateUpdateCallback != null) {
-                                    stateUpdateCallback.onStateUpdated();
                                 }
                                 return 0;
                             }
@@ -721,6 +799,7 @@ public class CPU {
                         stateUpdateCallback.onStateUpdated();
                     }
                 }
+                ioExecutor.shutdown();
             case "011011":
                 //OUT r,devid
                 index=Integer.parseInt(generalRegisters,2);
@@ -729,7 +808,7 @@ public class CPU {
                         //printer
                         StringBuilder sb=new StringBuilder(Printer);
                         sb.append("\n");
-                        sb.append(GPR[index]);
+                        sb.append(Integer.parseInt(GPR[index],2));
                         Printer=sb.toString();
                         if (stateUpdateCallback != null) {
                             stateUpdateCallback.onStateUpdated();
@@ -741,6 +820,7 @@ public class CPU {
                 else{
                     IOregisters[devid]=String.format("%16s",GPR[index]).replace(' ','0');
                 }
+                ioExecutor.shutdown();
             default:
                 return 1;
 
@@ -748,7 +828,7 @@ public class CPU {
 
     }
     public int handleIOAsync(String instruction, Memory memory) {
-        Task<Void> ioTask = new Task<Void>() {
+        /*Task<Void> ioTask = new Task<Void>() {
             @Override
             protected Void call() throws Exception {
                 System.out.println("running on new thread");
@@ -762,13 +842,16 @@ public class CPU {
         });
 
         new Thread(ioTask).start();
+        return 0;*/
+        addIOTask(() -> {
+            handleIO(instruction, memory);
+        });
         return 0;
     }
-
     public void setKeyboardInput(String input) {
         synchronized (lock) {
             this.keyboardInput = input;
-            System.out.println("this is the keyboard input"+input);
+            System.out.println("this is the keyboard input "+input);
             lock.notifyAll();
         }
     }
