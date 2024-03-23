@@ -10,17 +10,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="0baa4c80-e947-46db-b071-a2a980e6c85d" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/src/main/java/panel2/panel1/Main.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/resources/META-INF/MANIFEST.MF" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/resources/panel2/panel1/SevenSegment.ttf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/resources/panel2/panel1/img1.jpg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/panel2/panel1/MachineController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/panel2/panel1/MachineController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/LoadFile.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/LoadFile.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/panel2/panel1/Styles.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/panel2/panel1/Styles.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/panel2/panel1/machine.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/panel2/panel1/machine.fxml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -46,12 +36,27 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "git-widget-placeholder": "master",
     "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "/Users/abhiyansainju/Downloads/panel1",
+    "last_opened_file_path": "/Users/abhiyansainju/Desktop/GW Classes/Spring 2024 Classes/Computer Architecture CSCI 6461/Project CSCI 6461 Computer Architecture/MachineSimulator/MachineSimulator",
     "project.structure.last.edited": "Artifacts",
     "project.structure.proportion": "0.15",
     "project.structure.side.proportion": "0.2"
   }
 }]]></component>
+  <component name="RunManager">
+    <configuration default="true" type="JetRunConfigurationType">
+      <module name="MachineSimulator" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="KotlinStandaloneScriptRunConfigurationType">
+      <module name="MachineSimulator" />
+      <option name="filePath" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+  </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
