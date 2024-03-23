@@ -1,0 +1,46 @@
+LOC 6
+LDA 0, 0, 0
+STR 0, 0, 20
+LOOP:
+    OUT 0, 1
+    NOP
+    IN 1, 0
+    STR 1, 0, 21
+    LDR 0, 0, 20
+    AIR 0, 1
+    STR 0, 0, 20
+    LDR 0, 0, 20
+    SMR 0, 14
+    JNE 0, LOOP
+LDA 0, 0, 0
+STR 0, 0, 30
+PRINT_LOOP:
+    LDR 1, 0, 21
+    OUT 1, 1
+    LDR 0, 0, 30
+    AIR 0, 1
+    STR 0, 0, 30
+    LDR 0, 0, 30
+    SMR 0, 14
+    JNE 0, PRINT_LOOP
+OUT 0, 1
+IN 2, 0
+LDR 0, 0, 20
+STR 0, 0, 40
+LDR 1, 0, 21
+SMR 1, 2
+JCC 3, FIND_CLOSEST
+NOT 1
+FIND_CLOSEST:
+    STR 1, 0, 50
+    LDR 0, 0, 40
+    AIR 0, 1
+    STR 0, 0, 40
+    LDR 0, 0, 40
+    SMR 0, 14
+    JNE 0, FIND_CLOSEST
+OUT 2, 1
+LDR 3, 0, 50
+ADD 3, 2
+OUT 3, 1
+HLT
