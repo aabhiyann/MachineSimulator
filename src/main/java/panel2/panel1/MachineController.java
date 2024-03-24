@@ -102,16 +102,54 @@ public class MachineController extends Application {
     @FXML
     private Button COMPARE;
     @FXML
-    private void handlecompare() {
-        // not implemented yet
-        System.out.println("The compare button is pressed");
+    private void handleread20numbers() {
+        String input = TFCONSOLEKEYBOARD.getText().trim(); // Ensure whitespace from start/end is removed
+        String[] numbers = input.split("\\s*,\\s*"); // Split the numbers by comma, allowing for spaces
+
+        if (numbers.length != 20) {
+            return;
+        }
+
+        cpu.setGPR(1, String.format("%16s", Integer.toBinaryString(Integer.MAX_VALUE)).replace(' ', '0')); // Initialize with max value for comparison
+        cpu.setGPR(2, String.format("%16s", Integer.toBinaryString(Integer.MAX_VALUE)).replace(' ', '0')); // Smallest difference also starts at max
+
+        int targetNumber = Integer.parseInt(cpu.getGPR(0), 2); // Retrieve the target number
+
+        for (String numStr : numbers) {
+            try {
+                int currentNumber = Integer.parseInt(numStr.trim());
+                int currentDifference = Math.abs(currentNumber - targetNumber);
+
+                int smallestDifference = Integer.parseInt(cpu.getGPR(2), 2);
+                if (currentDifference < smallestDifference) {
+                    cpu.setGPR(1, String.format("%16s", Integer.toBinaryString(currentNumber)).replace(' ', '0')); // Update closest number
+                    cpu.setGPR(2, String.format("%16s", Integer.toBinaryString(currentDifference)).replace(' ', '0')); // Update smallest difference
+                }
+            } catch (NumberFormatException e) {
+                return;
+            }
+        }
+
+        updateFromCPU2UI(); // Update the UI to reflect changes
+        int closestNumber = Integer.parseInt(cpu.getGPR(1), 2);
+        TFCONSOLEPRINTER.appendText("Closest number to target: " + closestNumber + "\n");
+
+        TFCONSOLEKEYBOARD.clear(); // Clear the input field after processing
     }
 
     @FXML
-    private void handleread20numbers() {
-        // not implemented yet
-        System.out.println("The read 20 numbers button is pressed");
+    private void handlecompare() {
+        try {
+            int targetNumber = Integer.parseInt(TFCONSOLEKEYBOARD.getText().trim());
+            cpu.setGPR(0, String.format("%16s", Integer.toBinaryString(targetNumber)).replace(' ', '0')); // Store the target number with leading zeroes
+
+            updateFromCPU2UI(); // Update the UI with the new target number
+            TFCONSOLEKEYBOARD.clear();
+            TFCONSOLEPRINTER.appendText("Target number set: " + targetNumber + "\n");
+        } catch (NumberFormatException e) {
+        }
     }
+
 
 
     public void init(){

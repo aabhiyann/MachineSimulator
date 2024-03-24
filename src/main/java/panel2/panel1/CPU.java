@@ -624,8 +624,11 @@ public class CPU {
                 if(rx2==ry2){
                     CC=CC.substring(0,3)+"1";
                 }
+                else if(rx2<ry2){
+                    CC=CC.substring(0,2)+"1"+CC.substring(3);
+                }
                 else{
-                    CC=CC.substring(0,3)+"0";
+                    CC=CC.substring(0,1)+"1"+CC.substring(2);
                 }
                 if (stateUpdateCallback != null) {
                     stateUpdateCallback.onStateUpdated();
